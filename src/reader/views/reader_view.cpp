@@ -75,7 +75,7 @@ ReaderView::~ReaderView() {}
 bool ReaderView::render(SDL_Surface *dest, bool force) {
     bool r = state->token_view->render(dest, force);
     if (state->selecting) {
-        SDL_Rect bar = { 0, 0, dest->w, 8 };
+        SDL_Rect bar = { 0, 0, (Uint16)dest->w, (Uint16)8 };
         SDL_FillRect(dest, &bar, SDL_MapRGB(dest->format, 255, 255, 0));
     }
     return r;
