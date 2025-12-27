@@ -1,3 +1,4 @@
+bool selecting = false;
 #include <fstream>
 #include <vector>
 #include <string>

@@ -282,7 +282,7 @@ void ReaderView::on_keypress(SDLKey key)
             }
             break;
 
-        case SW_BTN_SELECT:
+        case SW_BTN_SELECT: open_toc_menu(*this, state); break; // 
             open_toc_menu(*this, *state);
             break;
 
