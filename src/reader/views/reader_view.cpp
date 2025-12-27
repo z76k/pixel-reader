@@ -1,3 +1,30 @@
+#include <fstream>
+#include <vector>
+#include <string>
+
+// --- CORE HIGHLIGHT SYSTEM ---
+inline bool selecting = false;
+inline std::string currentBookFile = "book";
+struct Highlight { DocAddr start; DocAddr end; };
+inline std::vector<Highlight> highlights;
+
+inline void saveHighlights() {
+    std::ofstream f(currentBookFile + ".txt");
+    for (auto& h : highlights) {
+        f << h.start.line_idx << "," << h.start.char_idx << "-" << h.end.line_idx << "," << h.end.char_idx << "\n";
+    }
+}
+
+inline void startOrFinishHighlight(int dummy) {
+    (void)dummy;
+    selecting = !selecting;
+    if (!selecting) saveHighlights();
+}
+
+inline std::vector<Highlight> getHighlightsForCurrentBook() { return highlights; }
+inline void loadHighlights() {}
+inline void deleteHighlightAt(unsigned long i) { (void)i; }
+// -----------------------------
 #include "../../../highlight_fix.h"
 #include <fstream>
 #include <vector>
