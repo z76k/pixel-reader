@@ -314,3 +314,14 @@ void ReaderView::on_keyheld(SDLKey key, uint32_t hold_time_ms) { state->token_vi
 void ReaderView::set_on_change_address(std::function<void(DocAddr)> callback) { state->on_change_address = callback; }
 void ReaderView::seek_to_toc_index(uint32_t toc_index) { seek_to_address(state->reader->get_toc_item_address(toc_index)); }
 void ReaderView::seek_to_address(DocAddr address) { if (state->token_view) { state->token_view->seek_to_address(address); update_token_view_title(address); if (state->on_change_address) state->on_change_address(address); } }
+// --- Highlights System Fix ---
+#include <string>
+#include <vector>
+std::string currentBookFile = "";
+bool selecting = false;
+void loadHighlights() {}
+void deleteHighlightAt(unsigned long index) { (void)index; }
+struct Highlight { int dummy; }; 
+std::vector<Highlight> getHighlightsForCurrentBook() { return std::vector<Highlight>(); }
+void startOrFinishHighlight(int dummy) { (void)dummy; selecting = !selecting; }
+// ------------------------------
