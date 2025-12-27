@@ -1,0 +1,41 @@
+name: Build Miyoo Mini package
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch: {}
+
+jobs:
+  build-miyoomini:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential zip unzip gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libzip-dev libxml2-dev libsdl1.2-dev libsdl-ttf2.0-dev libsdl-image1.2-dev libjpeg-dev zlib1g-dev
+
+      - name: Build
+        env:
+          UNION_PLATFORM: miyoomini
+          CROSS_COMPILE: arm-linux-gnueabihf-
+        run: |
+          make -j
+
+      - name: Create packages
+        env:
+          UNION_PLATFORM: miyoomini
+          CROSS_COMPILE: arm-linux-gnueabihf-
+        run: |
+          ./cross-compile/miyoo-mini/create_packages.sh 1.0
+
+      - name: List build artifacts
+        run: ls -la build || true
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: miyoomini-packages
+          path: build/*
