@@ -106,7 +106,7 @@ void ReaderView::on_keypress(SDLKey key) {
 }
 
 bool ReaderView::is_done() { return state->is_done; }
-void ReaderView::update_token_view_title(DocAddr address) {}
+void ReaderView::update_token_view_title(DocAddr /* address */) {}
 void ReaderView::on_keyheld(SDLKey key, uint32_t ms) { state->token_view->on_keyheld(key, ms); }
 void ReaderView::set_on_change_address(std::function<void(DocAddr)> cb) { state->on_change_address = cb; }
 void ReaderView::seek_to_address(DocAddr addr) { if (state->token_view) state->token_view->seek_to_address(addr); }

@@ -47,7 +47,7 @@ bool SettingsView::render(SDL_Surface *dest_surface, bool force_render)
         constexpr int style_label = 2;
 
         auto render_text = [&](const char *str, int style, TTF_Font *font = nullptr) {
-            return surface_unique_ptr { TTF_RenderUTF8_Shaded(
+            return surface_unique_ptr( TTF_RenderUTF8_Shaded(
                 font ? font : sys_font,
                 str,
                 style == style_normal ?

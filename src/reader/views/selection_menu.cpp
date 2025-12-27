@@ -170,10 +170,10 @@ bool SelectionMenu::render(SDL_Surface *dest_surface, bool force_render)
                 static_cast<Sint16>(y + line_padding / 2),
                 0, 0
             };
-            auto message = surface_unique_ptr { TTF_RenderUTF8_Shaded(
+            auto message = surface_unique_ptr( TTF_RenderUTF8_Shaded(
                 loaded_font,
                 entry.c_str(),
-            ) };
+            ) );
             SDL_BlitSurface(message.get(), NULL, dest_surface, &rectMessage);
         }
 
