@@ -1,3 +1,5 @@
+#include <cstdint>
+#include <cstdint>
 #include "./xhtml_string_util.h"
 
 #include "util/str_utils.h"

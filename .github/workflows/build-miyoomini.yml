@@ -30,9 +30,8 @@ jobs:
           UNION_PLATFORM: miyoomini
           CROSS_COMPILE: arm-linux-gnueabihf-
         run: |
-          # We explicitly tell make to use 'g++' instead of 'c++'
-          make -j CXX=arm-linux-gnueabihf-g++
-
+        
+make -j CXX=arm-linux-gnueabihf-g++
       - name: Create packages
         env:
           UNION_PLATFORM: miyoomini

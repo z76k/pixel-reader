@@ -1,3 +1,5 @@
+#include <cstdint>
+#include <cstdint>
 #ifndef DOC_ADDR_H_
 #define DOC_ADDR_H_
 

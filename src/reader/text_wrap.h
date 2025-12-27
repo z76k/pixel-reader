@@ -1,3 +1,5 @@
+#include <cstdint>
+#include <cstdint>
 #ifndef TEXT_WRAP_H_
 #define TEXT_WRAP_H_
 

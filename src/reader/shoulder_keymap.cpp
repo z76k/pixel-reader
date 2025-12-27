@@ -1,3 +1,5 @@
+#include <cstdint>
+#include <cstdint>
 #include "./shoulder_keymap.h"
 
 #include "sys/keymap.h"
