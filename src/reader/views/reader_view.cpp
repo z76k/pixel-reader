@@ -10,7 +10,6 @@
 #include "sys/keymap.h"
 #include "sys/screen.h"
 #include "util/sdl_font_cache.h"
-
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -18,27 +17,23 @@
 #include <fstream>
 #include <string>
 
-// --- HIGHLIGHT DATA STRUCTURE ---
 struct HighlightEntry {
     DocAddr start;
     DocAddr end;
-    std::string bookName;
 };
 
 struct ReaderViewState {
     bool is_done = false;
     std::function<void(DocAddr)> on_change_address;
-
     std::string filename;
     std::shared_ptr<DocReader> reader;
     SystemStyling &sys_styling;
     TokenViewStyling &token_view_styling;
     uint32_t token_view_styling_sub_id;
-
     ViewStack &view_stack;
     std::unique_ptr<TokenView> token_view;
 
-    // --- HIGHLIGHT STATE ---
+    // Highlight State
     bool selecting = false;
     DocAddr highlight_start_addr = 0;
     std::vector<HighlightEntry> highlights;
@@ -57,76 +52,61 @@ struct ReaderViewState {
 };
 
 namespace {
-    // SAVE FUNCTION: Appends to a single file on your SD card
-    void save_highlight_to_file(const ReaderViewState &state, DocAddr start, DocAddr end) {
-        std::ofstream f("/mnt/SDCARD/App/Reader/highlights.txt", std::ios::app);
+    void save_hl_safe(const ReaderViewState &state, DocAddr s, DocAddr e) {
+        // Saving to the current working directory is safest on Linux
+        std::ofstream f("highlights_database.txt", std::ios::app);
         if (f.is_open()) {
-            f << "Book: " << state.filename << " | From: " << start << " To: " << end << "\n";
+            f << "File: " << state.filename << " | Addr: " << s << " to " << e << "\n";
             f.close();
         }
     }
-
-    DocAddr get_current_address(const ReaderViewState &state) {
-        return state.token_view ? state.token_view->get_address() : 0;
-    }
 }
 
-// --- CORE FUNCTIONS ---
+ReaderView::ReaderView(std::filesystem::path path, std::shared_ptr<DocReader> reader, DocAddr seek_address, SystemStyling &sys_styling, TokenViewStyling &token_view_styling, ViewStack &view_stack) 
+    : state(std::make_unique<ReaderViewState>(path, seek_address, reader, sys_styling, token_view_styling, 0, view_stack))
+{
+    state->token_view->set_on_scroll([this](DocAddr address) {
+        if (state->on_change_address) state->on_change_address(address);
+    });
+}
 
-bool ReaderView::render(SDL_Surface *dest_surface, bool force_render) {
-    bool rendered = state->token_view->render(dest_surface, force_render);
+ReaderView::~ReaderView() {}
 
-    // VISUAL COLOR INDICATOR
-    // If we are currently selecting, draw a bright yellow bar at the top
+bool ReaderView::render(SDL_Surface *dest, bool force) {
+    bool r = state->token_view->render(dest, force);
     if (state->selecting) {
-        SDL_Rect highlightBar = { 0, 0, dest_surface->w, 8 };
-        SDL_FillRect(dest_surface, &highlightBar, SDL_MapRGB(dest_surface->format, 255, 255, 0));
+        SDL_Rect bar = { 0, 0, dest->w, 8 };
+        SDL_FillRect(dest, &bar, SDL_MapRGB(dest->format, 255, 255, 0));
     }
-
-    return rendered;
+    return r;
 }
 
 void ReaderView::on_keypress(SDLKey key) {
     if (key == SW_BTN_B) { state->is_done = true; return; }
-
     switch (key) {
-        case SW_BTN_Y: // HIGHLIGHT TOGGLE
+        case SW_BTN_Y:
             {
-                DocAddr current = get_current_address(*state);
+                DocAddr cur = state->token_view->get_address();
                 if (!state->selecting) {
                     state->selecting = true;
-                    state->highlight_start_addr = current;
+                    state->highlight_start_addr = cur;
                 } else {
                     state->selecting = false;
-                    save_highlight_to_file(*state, state->highlight_start_addr, current);
+                    save_hl_safe(*state, state->highlight_start_addr, cur);
                 }
             }
             break;
-
-        case SW_BTN_X: 
-            // Keep this for your Customize Menu as requested
+        case SW_BTN_A:
+            state->token_view_styling.set_show_title_bar(!state->token_view_styling.get_show_title_bar());
             break;
-
-        case SW_BTN_MENU:
-            {
-                // Put Search and other tools here to free up buttons
-                std::vector<std::string> entries = {"Search", "View Highlights", "TOC"};
-                auto menu = std::make_shared<SelectionMenu>(entries, state->sys_styling);
-                menu->set_on_selection([this](uint32_t idx) {
-                    if (idx == 0) /* trigger search */;
-                    if (idx == 1) /* open highlights list */;
-                });
-                state->view_stack.push(menu);
-            }
-            break;
-
         default:
             state->token_view->on_keypress(key);
             break;
     }
 }
 
-// Boilerplate helpers
 bool ReaderView::is_done() { return state->is_done; }
-void ReaderView::update_token_view_title(DocAddr address) {} 
-ReaderView::~ReaderView() {}
+void ReaderView::update_token_view_title(DocAddr address) {}
+void ReaderView::on_keyheld(SDLKey key, uint32_t ms) { state->token_view->on_keyheld(key, ms); }
+void ReaderView::set_on_change_address(std::function<void(DocAddr)> cb) { state->on_change_address = cb; }
+void ReaderView::seek_to_address(DocAddr addr) { if (state->token_view) state->token_view->seek_to_address(addr); }
