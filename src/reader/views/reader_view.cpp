@@ -1,11 +1,10 @@
+#include "../../highlight_system.h"
 #include <fstream>
 #include <vector>
 #include <string>
 
 // 'static' means "Only let this file see these variables" - No more linker errors!
 namespace {
-    struct SimpleHighlight { int sL, sC, eL, eC; };
-    static std::vector<SimpleHighlight> _list;
     static bool _isSelecting = false;
     static int _sL, _sC;
 }
@@ -18,7 +17,6 @@ static void save_to_txt(std::string book) {
     }
 }
 
-static void do_highlight(int l, int c, std::string book) {
     if (!_isSelecting) {
         _sL = l; _sC = c;
         _isSelecting = true;
