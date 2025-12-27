@@ -1,3 +1,4 @@
+#include "highlights_shared.h"
 #include "./config.h"
 #include "./font_catalog.h"
 #include "./settings_store.h"
@@ -390,14 +391,3 @@ int main(int argc, char **argv)
     return 0;
 }
 
-// --- EMERGENCY HIGHLIGHT FIX ---
-#include <string>
-#include <vector>
-bool selecting = false;
-std::string currentBookFile = "";
-void loadHighlights() {}
-void deleteHighlightAt(unsigned long index) { (void)index; }
-struct Highlight { int dummy; }; 
-std::vector<Highlight> getHighlightsForCurrentBook() { return {}; }
-void startOrFinishHighlight(int dummy) { (void)dummy; selecting = !selecting; }
-// -------------------------------
