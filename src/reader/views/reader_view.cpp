@@ -1,4 +1,5 @@
 #include "./reader_view.h"
+#include "util/sdl_pointer.h"
 #include "highlight.h"  
 #include "search_view.h"
 
@@ -243,7 +244,7 @@ void ReaderView::on_keypress(SDLKey key)
                     break;
                 }
 
-                auto on_submit = [this, &state](const std::string &q) {
+                auto on_submit = [this](const std::string &q) {
                     if (q.empty()) return; // cancelled
                     perform_search(*state, q);
                     if (!state->search_results.empty()) {

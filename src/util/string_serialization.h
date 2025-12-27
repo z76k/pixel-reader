@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <cstdint>
+#include <cstdint>
 #ifndef STRING_SERIALIZATION_H_
 #define STRING_SERIALIZATION_H_
 

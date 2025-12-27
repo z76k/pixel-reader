@@ -76,9 +76,9 @@ bool isCharHighlighted(int charIndex) {
 }
 
 // ---------- New helpers ----------
-std::vector<HighlightInfo> getHighlightsForCurrentBook()
+std::vector<Highlight> getHighlightsForCurrentBook()
 {
-    std::vector<HighlightInfo> out;
+    std::vector<Highlight> out;
     for (const auto &h : highlights) {
         out.push_back({h.start, h.end});
     }

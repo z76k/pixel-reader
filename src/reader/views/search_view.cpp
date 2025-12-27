@@ -1,9 +1,11 @@
 #include "search_view.h"
+#include "util/sdl_pointer.h"
 #include "reader/draw_modal_border.h"
 #include "reader/system_styling.h"
 #include "sys/screen.h"
 #include "util/sdl_font_cache.h"
 #include "sys/keymap.h"
+#include "util/sdl_pointer.h"
 
 #include <SDL/SDL.h>
 
@@ -70,13 +72,13 @@ void SearchView::on_keypress(SDLKey key)
             if (!query.empty()) { query.pop_back(); _needs_render = true; }
             break;
         case SDLK_RETURN:
-        case SW_BTN_START:
+        // // case SW_BTN_START:
             // Submit
             on_submit(query);
             _is_done = true;
             break;
         case SDLK_ESCAPE:
-        case SW_BTN_MENU:
+        // // case SW_BTN_MENU:
             // Cancel
             on_submit(std::string());
             _is_done = true;

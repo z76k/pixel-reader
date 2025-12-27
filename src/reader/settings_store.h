@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <cstdint>
+#include <cstdint>
 #ifndef SETTINGS_STORE_H_
 #define SETTINGS_STORE_H_
 
