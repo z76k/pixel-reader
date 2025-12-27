@@ -1,3 +1,4 @@
+#include "../highlight_fix.h"
 #include "./config.h"
 #include "./font_catalog.h"
 #include "./settings_store.h"

@@ -1,3 +1,4 @@
+#include "../../../highlight_fix.h"
 #include <fstream>
 #include <vector>
 #include <string>
@@ -5,42 +6,31 @@
 // The "Brain" of the Highlights
 struct Highlight { DocAddr start; DocAddr end; };
 std::vector<Highlight> currentHighlights;
-bool selecting = false;
 DocAddr selectionStart;
-std::string currentBookFile = "default_book";
 
 void saveHighlights() {
-    std::ofstream out(currentBookFile + ".highlights.txt");
     for (const auto& h : currentHighlights) {
         out << h.start.line_idx << "," << h.start.char_idx << "-" 
             << h.end.line_idx << "," << h.end.char_idx << "\n";
     }
 }
 
-void loadHighlights() {
     currentHighlights.clear();
-    std::ifstream in(currentBookFile + ".highlights.txt");
     // Simple loader logic would go here
 }
 
-void deleteHighlightAt(unsigned long index) {
     if (index < currentHighlights.size()) {
         currentHighlights.erase(currentHighlights.begin() + index);
         saveHighlights();
     }
 }
 
-std::vector<Highlight> getHighlightsForCurrentBook() {
     return currentHighlights;
 }
 
-void startOrFinishHighlight(int dummy) {
     (void)dummy;
-    if (!selecting) {
-        selecting = true;
         // In a real build, we'd grab the 'current_address' from the state here
     } else {
-        selecting = false;
         saveHighlights();
     }
 }
@@ -99,8 +89,6 @@ struct ReaderViewState
               token_view_styling
           ))
     {
-        currentBookFile = filename; 
-        loadHighlights();
     }
 
     ~ReaderViewState() {}
@@ -157,7 +145,6 @@ void open_toc_menu(ReaderView &reader_view, ReaderViewState &state) { /* ... kee
 
 void open_highlights_menu(ReaderView &reader_view, ReaderViewState &state)
 {
-    auto hl_list = getHighlightsForCurrentBook();
     std::vector<std::string> entries;
     for (size_t i = 0; i < hl_list.size(); ++i) {
         const auto &h = hl_list[i];
@@ -171,7 +158,6 @@ void open_highlights_menu(ReaderView &reader_view, ReaderViewState &state)
     auto menu = std::make_shared<SelectionMenu>(entries, state.sys_styling);
     menu->set_close_on_select();
     menu->set_on_selection([&state, menu](uint32_t idx) {
-        auto hlist = getHighlightsForCurrentBook();
         if (hlist.empty()) return;
         if (idx >= hlist.size()) return;
 
@@ -179,7 +165,6 @@ void open_highlights_menu(ReaderView &reader_view, ReaderViewState &state)
         auto action_entries = std::vector<std::string>{"Jump to highlight", "Delete highlight", "Cancel"};
         auto action_menu = std::make_shared<SelectionMenu>(action_entries, state.sys_styling);
         action_menu->set_on_selection([&state, idx](uint32_t a) {
-            auto hlist2 = getHighlightsForCurrentBook();
             if (idx >= hlist2.size()) return;
             if (a == 0) {
                 // Jump
@@ -188,8 +173,6 @@ void open_highlights_menu(ReaderView &reader_view, ReaderViewState &state)
                 }
             } else if (a == 1) {
                 // Delete
-                deleteHighlightAt(idx);
-                loadHighlights();
             }
         });
         state.view_stack.push(action_menu);
@@ -243,7 +226,6 @@ bool ReaderView::render(SDL_Surface *dest_surface, bool force_render)
     bool rendered = state->token_view->render(dest_surface, force_render);
 
     // Now, if we are currently highlighting, draw a "Status" box at the top
-    if (selecting) {
         SDL_Rect statusBox = { 5, 5, 10, 10 }; // Small yellow square in corner
         SDL_FillRect(dest_surface, &statusBox, SDL_MapRGB(dest_surface->format, 255, 255, 0));
     }
@@ -274,7 +256,6 @@ void ReaderView::on_keypress(SDLKey key)
         case SW_BTN_X: // Let's use the X button for highlights so we don't break the A button menu!
             {
                 DocAddr addr = get_current_address(*state);
-                startOrFinishHighlight((int)addr);
             }
             break;
 
