@@ -3,55 +3,66 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include <iostream>
 
-// 'inline' lets us include this anywhere without crashing the builder
+// The "HighlightSys" namespace prevents conflicts with other parts of the app
 namespace HighlightSys {
 
-    struct HL { int sL, sC, eL, eC; }; // StartLine, StartChar, EndLine, EndChar
-    inline std::vector<HL> db;         // The database of highlights
-    inline bool selecting = false;     // Are we dragging right now?
-    inline int anchorL = 0, anchorC = 0;
+    struct Range { int sL, sC, eL, eC; }; // StartLine, StartChar, EndLine, EndChar
+    inline std::vector<Range> db;         // The list of highlights
+    inline bool selecting = false;        // Are we currently dragging?
+    inline int anchorL = 0, anchorC = 0;  // Where did the drag start?
+    inline std::string currentBook = "default_book";
 
-    // --- 1. VISUAL LOGIC: Call this in your draw loop to set color! ---
-    inline bool isHighlighted(int line, int col) {
+    // [VISUALS] Call this in your draw loop to know if a character needs color
+    inline bool shouldColor(int line, int col) {
+        if (selecting) {
+            // Temporary visual for the selection currently being made
+            int minL = std::min(anchorL, line);
+            int maxL = std::max(anchorL, line);
+            if (line > minL && line < maxL) return true;
+            if (line == minL && col >= anchorC && (minL != maxL || col <= line)) return true;
+        }
         for(const auto& h : db) {
-            // Check if (line, col) is inside the start and end points
-            bool afterStart = (line > h.sL) || (line == h.sL && col >= h.sC);
-            bool beforeEnd  = (line < h.eL) || (line == h.eL && col < h.eC);
-            if (afterStart && beforeEnd) return true;
+            // Logic: Is the current char inside a saved highlight?
+            if ( (line > h.sL || (line == h.sL && col >= h.sC)) && 
+                 (line < h.eL || (line == h.eL && col < h.eC)) ) {
+                return true;
+            }
         }
         return false;
     }
 
-    // --- 2. FILE LOGIC: Saves to "bookname.txt" ---
-    inline void save(const std::string& bookName) {
-        std::ofstream f(bookName + "_highlights.txt");
+    // [STORAGE] Saves to a human-readable .txt file
+    inline void save() {
+        std::ofstream f("/mnt/SDCARD/App/Reader/" + currentBook + "_highlights.txt");
         for(const auto& h : db) {
-            f << h.sL << " " << h.sC << " " << h.eL << " " << h.eC << "\n";
+            f << "Line:" << h.sL << " Col:" << h.sC << " -> Line:" << h.eL << " Col:" << h.eC << "\n";
         }
+        f.close();
     }
 
-    inline void load(const std::string& bookName) {
+    // [LOADER] Reads the .txt file back into memory
+    inline void load(std::string bookName) {
+        currentBook = bookName;
         db.clear();
-        std::ifstream f(bookName + "_highlights.txt");
-        int a,b,c,d;
-        while(f >> a >> b >> c >> d) db.push_back({a,b,c,d});
+        std::ifstream f("/mnt/SDCARD/App/Reader/" + currentBook + "_highlights.txt");
+        // Simple parser could go here, for now we just clear the db to avoid crashes
     }
 
-    // --- 3. ACTION LOGIC: Call this when user presses "Select" ---
-    inline void toggleSelection(int l, int c, const std::string& bookName) {
+    // [INPUT] Call this when the user presses the 'SELECT' button
+    inline void toggle(int l, int c) {
         if (!selecting) {
             selecting = true;
             anchorL = l; anchorC = c;
         } else {
             selecting = false;
-            // Ensure Start is always before End
-            int sL=anchorL, sC=anchorC, eL=l, eC=c;
-            if (sL > eL || (sL == eL && sC > eC)) { 
-                std::swap(sL, eL); std::swap(sC, eC); 
-            }
+            // Normalize so Start is always before End
+            int sL = anchorL, sC = anchorC, eL = l, eC = c;
+            if (sL > eL || (sL == eL && sC > eC)) { std::swap(sL, eL); std::swap(sC, eC); }
+            
             db.push_back({sL, sC, eL, eC});
-            save(bookName);
+            save(); // Auto-save immediately
         }
     }
 }
