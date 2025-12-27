@@ -3,7 +3,7 @@
 #include "sys/keymap.h"
 
 #include <vector>
-
+#include <cstdint>
 namespace
 {
 
