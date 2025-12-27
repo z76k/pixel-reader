@@ -2,68 +2,78 @@
 #include <vector>
 #include <string>
 
-// --- CORE HIGHLIGHT SYSTEM ---
-inline bool selecting = false;
-inline std::string currentBookFile = "book";
-struct Highlight { DocAddr start; DocAddr end; };
-inline std::vector<Highlight> highlights;
+// Internal structures - 'static' prevents linker errors
+namespace {
+    struct SimpleHighlight {
+        int s_line, s_char, e_line, e_char;
+    };
+    static std::vector<SimpleHighlight> _my_highlights;
+    static bool _is_selecting = false;
+    static int _start_l, _start_c;
+}
 
-inline void saveHighlights() {
-    std::ofstream f(currentBookFile + ".txt");
-    for (auto& h : highlights) {
-        f << h.start.line_idx << "," << h.start.char_idx << "-" << h.end.line_idx << "," << h.end.char_idx << "\n";
+// The Save Function
+static void save_highlight_to_file(std::string bookPath) {
+    std::ofstream f(bookPath + ".highlights.txt", std::ios::app);
+    if (!_my_highlights.empty()) {
+        auto h = _my_highlights.back();
+        f << h.s_line << ":" << h.s_char << " to " << h.e_line << ":" << h.e_char << "\n";
+    }
+    f.close();
+}
+
+// The Highlight Toggle
+static void do_highlight(int line, int ch, std::string path) {
+    if (!_is_selecting) {
+        _start_l = line; _start_c = ch;
+        _is_selecting = true;
+    } else {
+        _my_highlights.push_back({_start_l, _start_c, line, ch});
+        _is_selecting = false;
+        save_highlight_to_file(path);
     }
 }
-
-inline void startOrFinishHighlight(int dummy) {
-    (void)dummy;
-    selecting = !selecting;
-    if (!selecting) saveHighlights();
-}
-
-inline std::vector<Highlight> getHighlightsForCurrentBook() { return highlights; }
-inline void loadHighlights() {}
-inline void deleteHighlightAt(unsigned long i) { (void)i; }
-// -----------------------------
-#include "../../../highlight_fix.h"
+// ---------------------------------------------------------
 #include <fstream>
 #include <vector>
 #include <string>
 
-// The "Brain" of the Highlights
-struct Highlight { DocAddr start; DocAddr end; };
-std::vector<Highlight> currentHighlights;
+// --- CORE HIGHLIGHT SYSTEM ---
+
+        f << h.start.line_idx << "," << h.start.char_idx << "-" << h.end.line_idx << "," << h.end.char_idx << "\n";
+    }
+}
+
+    (void)dummy;
+}
+
+// -----------------------------
+#include <fstream>
+#include <vector>
+#include <string>
+
 DocAddr selectionStart;
 
-void saveHighlights() {
-    for (const auto& h : currentHighlights) {
         out << h.start.line_idx << "," << h.start.char_idx << "-" 
             << h.end.line_idx << "," << h.end.char_idx << "\n";
     }
 }
 
-    currentHighlights.clear();
     // Simple loader logic would go here
 }
 
-    if (index < currentHighlights.size()) {
-        currentHighlights.erase(currentHighlights.begin() + index);
-        saveHighlights();
     }
 }
 
-    return currentHighlights;
 }
 
     (void)dummy;
         // In a real build, we'd grab the 'current_address' from the state here
     } else {
-        saveHighlights();
     }
 }
 #include "./reader_view.h"
 #include "util/sdl_pointer.h"
-#include "highlight.h"  
 #include "search_view.h"
 
 #include "./selection_menu.h"
@@ -170,16 +180,13 @@ void go_to_search_index(ReaderViewState &state, size_t index)
 
 void open_toc_menu(ReaderView &reader_view, ReaderViewState &state) { /* ... keep original TOC code here ... */ }
 
-void open_highlights_menu(ReaderView &reader_view, ReaderViewState &state)
 {
     std::vector<std::string> entries;
     for (size_t i = 0; i < hl_list.size(); ++i) {
         const auto &h = hl_list[i];
-        entries.push_back(std::string("Highlight ") + std::to_string(i+1) + ": " + std::to_string(h.start) + " - " + std::to_string(h.end));
     }
 
     if (entries.empty()) {
-        entries.push_back("No highlights");
     }
 
     auto menu = std::make_shared<SelectionMenu>(entries, state.sys_styling);
@@ -280,7 +287,6 @@ void ReaderView::on_keypress(SDLKey key)
     }
 
     switch (key) {
-        case SW_BTN_X: // Let's use the X button for highlights so we don't break the A button menu!
             {
                 DocAddr addr = get_current_address(*state);
             }
@@ -339,14 +345,11 @@ void ReaderView::on_keypress(SDLKey key)
 
         case SW_BTN_MENU:
             {
-                // Mini menu: Search Results / Highlights / Cancel
-                std::vector<std::string> entries = {"Search Results", "Highlights", "Cancel"};
                 auto menu = std::make_shared<SelectionMenu>(entries, state->sys_styling);
                 menu->set_on_selection([this](uint32_t idx) {
                     if (idx == 0) {
                         open_search_results_menu(*this, *state);
                     } else if (idx == 1) {
-                        open_highlights_menu(*this, *state);
                     }
                 });
                 state->view_stack.push(menu);
