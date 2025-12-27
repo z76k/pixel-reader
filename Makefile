@@ -5,7 +5,7 @@ endif
 
 PREFIX ?= /usr
 
-WARNFLAGS := -pedantic-errors -Wall -Wextra
+WARNFLAGS :=  -Wall -Wextra
 CXXFLAGS := -std=c++17 -O2
 LDFLAGS  := -lstdc++ -lSDL -lSDL_ttf -lSDL_image -lzip -lxml2 -lstdc++fs
 
