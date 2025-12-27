@@ -11,26 +11,36 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Install Toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-arm-linux-gnueabihf libsdl1.2-dev libsdl-ttf2.0-dev libxml2-dev
 
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential zip unzip gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libzip-dev libxml2-dev libsdl1.2-dev libsdl-ttf2.0-dev libsdl-image1.2-dev libjpeg-dev zlib1g-dev
+          # Provide c++ binary name expected by the Makefile (arm-linux-gnueabihf-c++)
+          if [ -x "$(which arm-linux-gnueabihf-g++)" ]; then
+            sudo ln -sf "$(which arm-linux-gnueabihf-g++)" /usr/bin/arm-linux-gnueabihf-c++ || true
+          fi
 
-      - name: Build
+      - - name: Build
         env:
           UNION_PLATFORM: miyoomini
           CROSS_COMPILE: arm-linux-gnueabihf-
         run: |
-          make -j
+          # We explicitly tell make to use 'g++' instead of 'c++'
+          make -j CXX=arm-linux-gnueabihf-g++
 
       - name: Create packages
         env:
           UNION_PLATFORM: miyoomini
           CROSS_COMPILE: arm-linux-gnueabihf-
         run: |
+          # Ensure the script is executable and run it
+          chmod +x ./cross-compile/miyoo-mini/create_packages.sh
           ./cross-compile/miyoo-mini/create_packages.sh 1.0
-
       - name: List build artifacts
         run: ls -la build || true
 
