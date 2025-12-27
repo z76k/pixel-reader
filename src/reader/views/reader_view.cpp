@@ -2,35 +2,51 @@
 #include <vector>
 #include <string>
 
+// 'static' means "Only let this file see these variables" - No more linker errors!
+namespace {
+    struct SimpleHighlight { int sL, sC, eL, eC; };
+    static std::vector<SimpleHighlight> _list;
+    static bool _isSelecting = false;
+    static int _sL, _sC;
+}
+
+static void save_to_txt(std::string book) {
+    std::ofstream f(book + ".txt", std::ios::app);
+    if (!_list.empty()) {
+        auto h = _list.back();
+        f << h.sL << "," << h.sC << " to " << h.eL << "," << h.eC << "\n";
+    }
+}
+
+static void do_highlight(int l, int c, std::string book) {
+    if (!_isSelecting) {
+        _sL = l; _sC = c;
+        _isSelecting = true;
+    } else {
+        _list.push_back({_sL, _sC, l, c});
+        _isSelecting = false;
+        save_to_txt(book);
+    }
+}
+#include <fstream>
+#include <vector>
+#include <string>
+
 // Internal structures - 'static' prevents linker errors
 namespace {
-    struct SimpleHighlight {
         int s_line, s_char, e_line, e_char;
     };
-    static std::vector<SimpleHighlight> _my_highlights;
-    static bool _is_selecting = false;
     static int _start_l, _start_c;
 }
 
 // The Save Function
-static void save_highlight_to_file(std::string bookPath) {
-    std::ofstream f(bookPath + ".highlights.txt", std::ios::app);
-    if (!_my_highlights.empty()) {
-        auto h = _my_highlights.back();
         f << h.s_line << ":" << h.s_char << " to " << h.e_line << ":" << h.e_char << "\n";
     }
     f.close();
 }
 
-// The Highlight Toggle
-static void do_highlight(int line, int ch, std::string path) {
-    if (!_is_selecting) {
         _start_l = line; _start_c = ch;
-        _is_selecting = true;
     } else {
-        _my_highlights.push_back({_start_l, _start_c, line, ch});
-        _is_selecting = false;
-        save_highlight_to_file(path);
     }
 }
 // ---------------------------------------------------------
@@ -195,8 +211,6 @@ void open_toc_menu(ReaderView &reader_view, ReaderViewState &state) { /* ... kee
         if (hlist.empty()) return;
         if (idx >= hlist.size()) return;
 
-        // Action menu for a highlight
-        auto action_entries = std::vector<std::string>{"Jump to highlight", "Delete highlight", "Cancel"};
         auto action_menu = std::make_shared<SelectionMenu>(action_entries, state.sys_styling);
         action_menu->set_on_selection([&state, idx](uint32_t a) {
             if (idx >= hlist2.size()) return;
@@ -259,7 +273,6 @@ bool ReaderView::render(SDL_Surface *dest_surface, bool force_render)
     // First, let the system draw the text
     bool rendered = state->token_view->render(dest_surface, force_render);
 
-    // Now, if we are currently highlighting, draw a "Status" box at the top
         SDL_Rect statusBox = { 5, 5, 10, 10 }; // Small yellow square in corner
         SDL_FillRect(dest_surface, &statusBox, SDL_MapRGB(dest_surface->format, 255, 255, 0));
     }

@@ -62,11 +62,9 @@ void on_menu_entry_selected(FSState *s, uint32_t menu_index)
     {
         if (entry.name == "..")
         {
-            std::string highlight_name = s->path.filename();
 
             s->path = s->path.parent_path();
             refresh_path_entries(s);
-            s->menu.set_cursor_pos(highlight_name);
         }
         else
         {

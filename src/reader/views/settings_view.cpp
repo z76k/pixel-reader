@@ -52,10 +52,8 @@ bool SettingsView::render(SDL_Surface *dest_surface, bool force_render)
                 str,
                 style == style_normal ?
                     theme.main_text :
-                    (style == style_hl ? theme.highlight_text : theme.secondary_text),
                 style == style_normal ?
                     theme.background :
-                    (style == style_hl ? theme.highlight_background : theme.background)
             ) };
         };
 

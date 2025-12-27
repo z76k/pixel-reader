@@ -135,11 +135,8 @@ bool SelectionMenu::render(SDL_Surface *dest_surface, bool force_render)
     const auto &theme = styling.get_loaded_color_theme();
     const SDL_Color &fg_color = theme.main_text;
     const SDL_Color &bg_color = theme.background;
-    const SDL_Color &hl_bg_color = theme.highlight_background;
-    const SDL_Color &hl_text_color = theme.highlight_text;
 
     uint32_t rect_bg_color = SDL_MapRGB(pixel_format, bg_color.r, bg_color.g, bg_color.b);
-    uint32_t rect_highlight_color = SDL_MapRGB(pixel_format, hl_bg_color.r, hl_bg_color.g, hl_bg_color.b);
 
     Sint16 x = line_padding;
     Sint16 y = excess_pxl_y() / 2;
@@ -160,13 +157,10 @@ bool SelectionMenu::render(SDL_Surface *dest_surface, bool force_render)
 
         const auto &entry = entries[global_i];
 
-        bool is_highlighted = (global_i == cursor_pos);
 
         // Draw hightlight
-        if (is_highlighted)
         {
             SDL_Rect rect = {0, y, SCREEN_WIDTH, (Uint16)(line_height)};
-            SDL_FillRect(dest_surface, &rect, rect_highlight_color);
         }
 
         // Draw text
@@ -179,8 +173,6 @@ bool SelectionMenu::render(SDL_Surface *dest_surface, bool force_render)
             auto message = surface_unique_ptr { TTF_RenderUTF8_Shaded(
                 loaded_font,
                 entry.c_str(),
-                is_highlighted ? hl_text_color : fg_color,
-                is_highlighted ? hl_bg_color : bg_color
             ) };
             SDL_BlitSurface(message.get(), NULL, dest_surface, &rectMessage);
         }

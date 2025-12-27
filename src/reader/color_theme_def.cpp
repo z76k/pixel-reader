@@ -15,8 +15,6 @@ const std::vector<std::pair<std::string, ColorTheme>> theme_defs = {
             {0, 0, 0, 0},       // background
             {240, 240, 240, 0}, // main text
             {96, 96, 96, 0},    // secondary text
-            {150, 38, 200, 0},  // highlight background
-            {240, 240, 240, 0}, // highlight text
         }
     },
     {
@@ -25,8 +23,6 @@ const std::vector<std::pair<std::string, ColorTheme>> theme_defs = {
             {255, 255, 255, 0}, // background
             {0, 0, 0, 0},       // main text
             {160, 160, 160, 0}, // secondary text
-            {163, 81, 200, 0},  // highlight background
-            {250, 250, 250, 0}, // highlight text
         }
     },
     {
@@ -35,8 +31,6 @@ const std::vector<std::pair<std::string, ColorTheme>> theme_defs = {
             {250, 240, 220, 0}, // background
             {0, 0, 0, 0},    // main text
             {160, 160, 160, 0}, // secondary text
-            {163, 81, 200, 0},  // highlight background
-            {250, 240, 220, 0}, // highlight text
         }
     },
     {
@@ -45,8 +39,6 @@ const std::vector<std::pair<std::string, ColorTheme>> theme_defs = {
             {0, 0, 0, 0},   // background
             {192, 0, 0, 0}, // main text
             {96, 0, 0, 0},  // secondary text
-            {192, 0, 0, 0}, // highlight background
-            {0, 0, 0, 0},   // highlight text
         }
     },
 };
