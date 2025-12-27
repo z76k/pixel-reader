@@ -1,4 +1,3 @@
-#include "highlights_shared.h"
 #include "./config.h"
 #include "./font_catalog.h"
 #include "./settings_store.h"

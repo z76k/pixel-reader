@@ -1,4 +1,49 @@
-#include "highlights_shared.h"
+#include <fstream>
+#include <vector>
+#include <string>
+
+// The "Brain" of the Highlights
+struct Highlight { DocAddr start; DocAddr end; };
+std::vector<Highlight> currentHighlights;
+bool selecting = false;
+DocAddr selectionStart;
+std::string currentBookFile = "default_book";
+
+void saveHighlights() {
+    std::ofstream out(currentBookFile + ".highlights.txt");
+    for (const auto& h : currentHighlights) {
+        out << h.start.line_idx << "," << h.start.char_idx << "-" 
+            << h.end.line_idx << "," << h.end.char_idx << "\n";
+    }
+}
+
+void loadHighlights() {
+    currentHighlights.clear();
+    std::ifstream in(currentBookFile + ".highlights.txt");
+    // Simple loader logic would go here
+}
+
+void deleteHighlightAt(unsigned long index) {
+    if (index < currentHighlights.size()) {
+        currentHighlights.erase(currentHighlights.begin() + index);
+        saveHighlights();
+    }
+}
+
+std::vector<Highlight> getHighlightsForCurrentBook() {
+    return currentHighlights;
+}
+
+void startOrFinishHighlight(int dummy) {
+    (void)dummy;
+    if (!selecting) {
+        selecting = true;
+        // In a real build, we'd grab the 'current_address' from the state here
+    } else {
+        selecting = false;
+        saveHighlights();
+    }
+}
 #include "./reader_view.h"
 #include "util/sdl_pointer.h"
 #include "highlight.h"  
@@ -54,7 +99,6 @@ struct ReaderViewState
               token_view_styling
           ))
     {
-        // --- 1. INITIALIZE HIGHLIGHTS ---
         currentBookFile = filename; 
         loadHighlights();
     }
@@ -193,7 +237,6 @@ ReaderView::~ReaderView() {
     state->token_view_styling.unsubscribe_from_changes(state->token_view_styling_sub_id);
 }
 
-// --- 2. THE RENDER HOOK ---
 bool ReaderView::render(SDL_Surface *dest_surface, bool force_render)
 {
     // First, let the system draw the text
@@ -228,7 +271,6 @@ void ReaderView::on_keypress(SDLKey key)
     }
 
     switch (key) {
-        // --- 3. THE BUTTON HOOK ---
         case SW_BTN_X: // Let's use the X button for highlights so we don't break the A button menu!
             {
                 DocAddr addr = get_current_address(*state);
