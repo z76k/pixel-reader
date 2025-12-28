@@ -30,7 +30,7 @@ INCLUDE  := -Isrc -I${SYSROOT}${PREFIX}/include/libxml2
 
 ROTOZOOM_SRC := src/extern/rotozoom/SDL_rotozoom.c
 COMMON_SRC   := $(filter-out src/reader/main.cpp, $(wildcard src/filetypes/*.cpp src/filetypes/txt/*.cpp src/filetypes/epub/*.cpp src/reader/*.cpp src/reader/views/*.cpp src/reader/views/token_view/*.cpp src/sys/*.cpp src/util/*.cpp src/doc_api/*.cpp src/extern/hash-library/*.cpp))
-READER_SRC   := $(COMMON_SRC) src/reader/main.cpp
+READER_SRC   := $(COMMON_SRC) src/reader/main.cpp src/highlight_manager.cpp
 SANDBOX_SRC  := $(COMMON_SRC) $(wildcard src/sandbox/*.cpp)
 TEST_SRC     := $(COMMON_SRC) $(wildcard src/sys/tests/*.cpp src/reader/tests/*.cpp src/filetypes/epub/tests/*.cpp src/util/tests/*.cpp src/doc_api/tests/*.cpp)
 
@@ -91,4 +91,4 @@ debug_test: CXXFLAGS += -g
 debug_test: test
 
 clean:
-	-@rm -rf $(BUILD)
+

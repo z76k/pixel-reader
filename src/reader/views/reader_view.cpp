@@ -16,7 +16,7 @@
 #include <cctype>
 #include <fstream>
 #include <string>
-
+#include "highlight_manager.h"
 struct HighlightEntry {
     DocAddr start;
     DocAddr end;
@@ -53,12 +53,18 @@ struct ReaderViewState {
 
 namespace {
     void save_hl_safe(const ReaderViewState &state, DocAddr s, DocAddr e) {
-        // Saving to the current working directory is safest on Linux
-        std::ofstream f("highlights_database.txt", std::ios::app);
-        if (f.is_open()) {
-            f << "File: " << state.filename << " | Addr: " << s << " to " << e << "\n";
-            f.close();
-        }
+        // Extract actual text between addresses
+        std::string highlighted_text = state.reader->extract_text(s, e);
+        
+        // Get book title from filename
+        std::string book_title = state.filename.stem().string();
+        
+        // Create highlight
+        Highlight h(book_title, highlighted_text, s.get_position(), e.get_position());
+        
+        // Save using HighlightManager
+        HighlightManager mgr;
+        mgr.save_highlight(h);
     }
 }
 

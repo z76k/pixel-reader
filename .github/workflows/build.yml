@@ -1,0 +1,51 @@
+name: Build Pixel Reader for Miyoo Mini Plus
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-miyoo:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libxml2-dev libzip-dev
+    
+    - name: Download ARM toolchain
+      run: |
+        wget https://github.com/miyoo-oss/toolchain/releases/download/v1.0/arm-miyoo-linux-uclibcgnueabi_x86-64.tar.gz
+        tar -xzf arm-miyoo-linux-uclibcgnueabi_x86-64.tar.gz -C /opt/
+        echo "/opt/arm-miyoo-linux-uclibcgnueabi/bin" >> $GITHUB_PATH
+    
+    - name: Build for Miyoo Mini Plus
+      run: |
+        export PATH="/opt/arm-miyoo-linux-uclibcgnueabi/bin:$PATH"
+        export CROSS_COMPILE=arm-linux-
+        export CC=arm-linux-gcc
+        export CXX=arm-linux-g++
+        make clean
+        make -j$(nproc)
+    
+    - name: Package build
+      run: |
+        mkdir -p release/pixel-reader
+        cp build/reader release/pixel-reader/
+        cp -r resources/* release/pixel-reader/ || true
+        cd release && zip -r pixel-reader-miyoo.zip pixel-reader/
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: pixel-reader-miyoo
+        path: release/pixel-reader-miyoo.zip
